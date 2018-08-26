@@ -1,0 +1,174 @@
+options:
+    prefix: &3[&b&lHypixel&3]
+    version: 0.9
+
+#Config File
+#Requires SkUtilities -> Recommended
+
+function configReset(n: number) :: number:
+    create file "plugins/HypixelCore/config.yml"
+    set yml value "TXT" of file "plugins/HypixelCore/config.yml" to "-------------------------------------------------------------"
+    set yml value "TXT2" of file "plugins/HypixelCore/config.yml" to "This is the official configfile for Hypixel Core"
+    set yml value "TXT3" of file "plugins/HypixelCore/config.yml" to "Please use this to change this and not the skript itself"
+    set yml value "TXT4" of file "plugins/HypixelCore/config.yml" to "I will not provide you support if you change the skript"
+    set yml value "TXT5" of file "plugins/HypixelCore/config.yml" to "-------------------------------------------------------------"
+    set yml value "Server Owner" of file "plugins/HypixelCore/config.yml" to "USERNAME HERE"
+
+
+function configReload(n: number) :: number:
+    set {ServerOwner.HypixelCore} to yml value "Server Owner" of file "plugins/HypixelCore/config.yml"
+
+on load:
+    if {ServerOwner.HypixelCore} is set:
+        set {Rank.%{ServerOwner.HypixelCore}%} to "Owner"
+        
+#OnJoinevents
+
+on join:
+    if {Rank.%player%} is "Owner":
+        message "{@prefix} &cYou got &lOWNER &crank!" to player
+
+#UpdateNotifier
+
+on load:
+    loop all players:
+        if {rank.%loop-player%} is "Admin" or "Owner":
+            message "{@prefix} &7Checking if there is an updated version availible." to loop-player
+    wait 3 seconds
+    set {versionchecker} to true
+    wait 10 seconds
+    if {versionchecker} is true:
+        loop all players:
+            if {rank.%loop-player%} is "Admin" or "Owner":
+                message "{@prefix} &7You are using the newest version." to loop-player
+    stop
+
+every 2 seconds:
+    if {versionchecker} is true:
+        set {versionserver} to line 1 from url "https://pastebin.com/raw/vS3N95UX"
+        set {versionmessage} to line 2 from url "https://pastebin.com/raw/vS3N95UX"
+        set {versiondownload} to line 3 from url "https://pastebin.com/raw/vS3N95UX"
+        set {versionchecker} to false
+        if {versionserver} is not "{@version}":
+            loop all players:
+                if {rank.%loop-player%} is "Admin" or "Owner":
+                    message "{@prefix} &7There is a new version for you to download" to loop-player
+                    message "{@prefix} &7Version: &b%{versionserver}%" to loop-player
+                    message "{@prefix} &7Version Description: %{versionmessage}%" to loop-player
+                    message "{@prefix} &7Download: %{versiondownload}%" to loop-player
+                    wait 3 seconds
+                    message "{@prefix} &7If you want to download this? Please execute '/hypixel update'" to loop-player
+                    message "{@prefix} &cWARNING: &7This requires &cWildSkript&7 to be &cinstalled!" to loop-player
+
+#AutoUpdater
+function update(n: number) :: number:
+    delete file "skript/scripts/HypixelCore.sk"
+    wait 2 seconds
+    download file from "" to "skript/scripts"
+    wait 10 seconds
+    loop all players:
+        if {rank.%loop-player%} is "Admin" or "Owner":
+            message "{@prefix} &cDownload &7has been &acompleted" to loop-player
+            message "{@prefix} &7Skript has been &creloaded &7AND &cALL updates &7are &cactive." to loop-player
+    execute console command "sk reload HypixelCore"
+#ChatSystem
+on chat:
+    cancel event
+    if {Rank.%player%} is "Owner":
+        broadcast "&c[Owner] %player%: &f%message%"
+    if {Rank.%player%} is "Admin":
+        broadcast "&c[ADMIN] %player%: &f%message%"
+    else:
+        broadcast "&7%player%: %message%"
+#RankSystem
+command /setrank [<offline player>] [<text>]:
+    trigger:
+        if {Rank.%player%} is "Admin" or "Owner":
+            if argument 1 is not set:
+                send "{@prefix} &7/setrank <player> <rank>"
+            if argument 1 is set:
+                if argument 2 is not set:
+                    send "{@prefix} &7/setrank <player> <rank>"
+                if argument 2 is "Admin":
+                    set {Rank.%arg-1%} to "Admin"
+                    send "{@prefix} &7%arg-1% now got the &cADMIN &7rank!"
+                    message "{@prefix} &7You now have &cADMIN &7rank!" to arg-1
+                if argument 2 is "Helper":
+                    set {Rank.%arg-1%} to "Helper"
+                    send "{@prefix} &7%arg-1% now got the &9Helper &7rank!"
+                    message "{@prefix} &7You now have &9Helper &7rank!" to arg-1
+                if argument 2 is "MVP":
+                    set {rank.%arg-1%} to "MVP"
+                    send "{@prefix} &7%arg-1% now got the &bMVP &7rank!"
+                    message "{@prefix} &bThanks for your purchase!" to arg-1
+                    message "{@prefix} &bYou now have the MVP rank!" to arg-1
+                if argument 2 is "MVP+":
+                    set {rank.%arg-1%} to "MVP+"
+                    send "{@prefix} &7%arg-1% now got the &bMVP&c+ &7rank!"
+                    message "{@prefix} &bThanks for your purchase!" to arg-1
+                    message "{@prefix} &bYou now have the MVP&c+&b rank!" to arg-1
+#Commands
+
+on skript load:
+    if {FirstTimeLoaded.HypixelCore} is not set:
+        broadcast "{@prefix} &7Hello There!"
+        wait 1 second
+        broadcast "{@prefix} &cI'm setting up the plugin for the first time..."
+        set {FirstTimeLoaded.HypixelCore} to true
+        configReset(1)
+        wait 2 seconds
+        broadcast "{@prefix} &aDONE! &7Please go to the &cconfig file &7and &cchange &7the &cServer Owner section."
+        broadcast "{@prefix} &cAfterwards&7, use '&c/hypixel configreload&7' to &creload your config."
+
+
+command /hypixel [<text>]:
+    trigger:
+        if argument 1 is not set:
+            send "&b&lThank you for using Hypixel Core"
+            send "&3If you are an admin or higher? You can use /hypixel help"
+            send "&9Created by KnuffelBeestje"
+        if argument 1 is "help":
+            if {Rank.%player%} is "Admin" or "Owner":
+                send "&9Commands (1)"
+                send "&b/hypixel help | &3Shows help"
+            if {Rank.%player%} is not "Admin" or "Owner":
+                send "{@prefix} &7You need the &cADMIN rank or higher &7to execute that command."
+        if argument 1 is "config":
+            if {Rank.%player%} is "Admin" or "Owner":
+                send "{@prefix} "
+        if argument 1 is "configreload":
+            if {Rank.%player%} is "Admin" or "Owner":
+                send "{@prefix} "
+        if argument 1 is "update":
+            if {Rank.%player%} is "Admin" or "Owner":
+                if {UpdateConfirm.HypixelCore} is not set:
+                    send "{@prefix} &7Please &crepeat &7the &ccommand&7 in order to update."
+                    send "{@prefix} &cWARNING: &7You need &cWildSkript&7to be installed!"
+                    send "{@prefix} &cSECOND WARNING: &7This feature &cMAY &7brake! &c(ALPHA)"
+                    set {UpdateConfirm.HypixelCore} to true
+                    wait 10 seconds
+                    if {UpdateConfirm.HypixelCore} is true:
+                        set {UpdateConfirm.HypixelCore} to false
+                        send "{@prefix} &7You waited &cTOO LONG! &7| Request Denied"
+                    stop
+                if {UpdateConfirm.HypixelCore} is true:
+                    set {UpdateConfirm.HypixelCore} to false
+                    send "{@prefix} &cDownload &7has been &aSTARTED"
+                    send "{@prefix} &7This &cMIGHT &7take a &cwhile"
+                    update(1)
+                    stop
+                if {UpdateConfirm.HypixelCore} is false:
+                    send "{@prefix} &7Please &crepeat &7the &ccommand&7 in order to update."
+                    send "{@prefix} &cWARNING: &7You need &cWildSkript&7to be installed!"
+                    send "{@prefix} &cSECOND WARNING: &7This feature &cMAY &7brake! &c(ALPHA)"
+                    set {UpdateConfirm.HypixelCore} to true
+                    wait 10 seconds
+                    if {UpdateConfirm.HypixelCore} is true:
+                        set {UpdateConfirm.HypixelCore} to false
+                        send "{@prefix} &7You waited &cTOO LONG! &7| Request Denied"
+                    stop
+
+        
+
+        
+
