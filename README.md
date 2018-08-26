@@ -1,0 +1,2 @@
+# HypixelCore
+AutoUpdater for HypixelCore
