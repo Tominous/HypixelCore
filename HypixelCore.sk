@@ -1,1 +1,735 @@
-...
+#Welcome to the Hypixel Core skript
+#I recommend you downloading ALL addons that are listed on the resource page.
+#To make sure you don't run into errors.
+#If you reload and there are occouring many errors? Then you most likely forget to install an addon.
+#I will provide support on GitHub for problems and bug reports.
+#If you change THIS skript then I will not provide support anymore.
+#Please only use the config / options to change things.
+
+
+options:
+    prefix: &3[&b&lHypixel&3]
+    version: 1.0 #Don't change this version please, it will break the version checker.
+
+
+#CHANGES YOU MAKE BELOW THIS LINE ARE AT YOUR OWN RISK.
+#I WILL NOT PROVIDE SUPPORT IF YOU CHANGE THESE.
+
+#Config File
+#Requires SkUtilities -> Recommended
+
+function configReset(n: number) :: number:
+    create file "plugins/HypixelCore/config.yml"
+    set yml value "Server Owner" of file "plugins/HypixelCore/config.yml" to "USERNAME HERE"
+    set yml value "TXT" of file "plugins/HypixelCore/config.yml" to "^^^ gives an owner role every reload to prevent griefing. | Please let the OWNER REJOIN AFTER EVERY CHANGE."
+    # set yml value "Bot Addon Installed" of file "plugins/HypixelCore/config.yml" to "false" -> Not released yet.
+    set yml value "Appeal link" of file "plugins/HypixelCore/config.yml" to "https://hypixel.net/appeal"
+    set yml value "Update Checker" of file "plugins/HypixelCore/config.yml" to "true"
+    set yml value "Server Name" of file "plugins/HypixelCore/config.yml" to "HYPIXEL"
+    set yml value "Website Link" of file "plugins/HypixelCore/config.yml" to "www.hypixel.net"
+    set yml value "Server IP" of file "plugins/HypixelCore/config.yml" to "MC.HYPIXEL.NET"
+    set yml value "Server Store" of file "plugins/HypixelCore/config.yml" to "STORE.HYPIXEL.NET"
+
+function configReload(n: number) :: number:
+    set {ServerOwner.HypixelCore} to yml value "Server Owner" of file "plugins/HypixelCore/config.yml"
+    set {appeallink.HP} to yml value "Appeal link" of file "plugins/HypixelCore/config.yml"
+    set {updatecheck.config} to yml value "Update Checker" of file "plugins/HypixelCore/config.yml"
+    set {config.serverName} to yml value "Server Name" of file "plugins/HypixelCore/config.yml"
+    set {config.Website} to yml value "Website Link" of file "plugins/HypixelCore/config.yml"
+    set {config.serverIP} to yml value "Server IP" of file "plugins/HypixelCore/config.yml"
+    set {config.serverstore} to yml value "Server Store" of file "plugins/HypixelCore/config.yml"
+
+on load:
+    configReload(1)
+
+#Tab
+#Requires SkRayFall -> Optional -> Required to let tab work.
+
+on join:
+    set tab header to "&bYou are playing on &e&l%{config.serverIP}%" and footer to "&aRanks, Boosters & MORE! &c&l%{config.serverstore}%" for player
+
+on load:
+    wait 2 seconds
+    loop all players:
+        set tab header to "&bYou are playing on &e&l%{config.serverIP}%" and footer to "&aRanks, Boosters & MORE! &c&l%{config.serverstore}%" for loop-player
+
+every 5 seconds:
+    loop all players:
+        set tab header to "&bYou are playing on &e&l%{config.serverIP}%" and footer to "&aRanks, Boosters & MORE! &c&l%{config.serverstore}%" for loop-player
+on connect:
+    if player is {ServerOwner.HypixelCore}:
+        set {Rank.%player's UUID%} to "Owner"
+
+#OnJoinevents
+
+on join:
+    if {Rank.%player's UUID%} is "Owner":
+        message "{@prefix} &cYou got &lOWNER &crank!" to player
+
+#UpdateNotifier
+
+on load:
+    if {updatecheck.config} is "true" or "True":
+        loop all players:
+            if {Rank.%loop-player's UUID%} is "Admin" or "Owner":
+                message "{@prefix} &7Checking if there is an updated version available." to loop-player
+        wait 3 seconds
+        set {versionchecker} to true
+        wait 10 seconds
+        if {versionchecker} is true:
+            loop all players:
+                if {Rank.%loop-player's UUID%} is "Admin" or "Owner":
+                    message "{@prefix} &7You are using the newest version ({@version})." to loop-player
+        stop
+
+every 2 seconds:
+    if {updatecheck.config} is "true" or "True":
+        if {versionchecker} is true:
+            set {versionserver} to line 1 from url "https://pastebin.com/raw/vS3N95UX"
+            set {versionmessage} to line 2 from url "https://pastebin.com/raw/vS3N95UX"
+            set {versiondownload} to line 3 from url "https://pastebin.com/raw/vS3N95UX"
+            set {versionchecker} to false
+            if {versionserver} is not "{@version}":
+                loop all players:
+                    if {Rank.%loop-player's UUID%} is "Admin" or "Owner":
+                        message "{@prefix} &7There is a new version for you to download." to loop-player
+                        message "{@prefix} &7Version: &b%{versionserver}%" to loop-player
+                        message "{@prefix} &7Version Description: %{versionmessage}%" to loop-player
+                        message "{@prefix} &7Download: %{versiondownload}%" to loop-player
+                        wait 3 seconds
+                        message "&f " to loop-player
+                        message "&f " to loop-player
+                        message "&f " to loop-player
+                        message "{@prefix} &7If you want to download this? Please execute '/hypixel update'" to loop-player
+                        message "{@prefix} &cWARNING: &7This requires &cSkUtilities&7 to be &cinstalled!" to loop-player
+                        message "&cYou can disable this message in the config if you want." to loop-player
+                        set {YouCanDownload} to true
+
+
+
+#AutoUpdater
+function update(n: number) :: number:
+    if {updatecheck.config} is "true" or "True":
+        delete file "plugins/Skript/scripts/HypixelCore.sk"
+        wait 2 seconds
+        download file from "https://raw.githubusercontent.com/bolleboor/HypixelCore/master/HypixelCore.sk" to file "plugins/Skript/scripts/HypixelCore.sk"
+        wait 5 seconds
+        loop all players:
+            if {Rank.%loop-player's UUID%} is "Admin" or "Owner":
+                message "&f " to loop-player
+                message "{@prefix} &cDownload &7has been &acompleted" to loop-player
+                message "{@prefix} &7Hypixel Core has been &creloaded &7AND &cALL updates &7are &cactive." to loop-player
+                message "{@prefix} &c&lPLEASE LOOK AT THE CHANGELOG ON SPIGOTMC TO SEE IF YOU NEED TO EXECUTE '/hypixel configreset'" to loop-player
+                message "&f " to loop-player
+                set {YouCanDownload} to false
+        execute console command "sk reload HypixelCore"
+
+
+#RankSystem
+command /setrank [<offline player>] [<text>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Admin" or "Owner":
+            if argument 1 is not set:
+                send "{@prefix} &7/setrank <player> <rank>"
+            if argument 1 is set:
+                if argument 2 is not set:
+                    send "{@prefix} &7/setrank <player> <rank>"
+                if argument 2 is "Admin":
+                    set {Rank.%arg 1's UUID%} to "Admin"
+                    send "{@prefix} &7%arg-1% now got the &cADMIN &7rank!"
+                    message "{@prefix} &7You now have &cADMIN &7rank!" to arg-1
+                if argument 2 is "Helper":
+                    set {Rank.%arg 1's UUID%} to "Helper"
+                    send "{@prefix} &7%arg-1% now got the &9Helper &7rank!"
+                    message "{@prefix} &7You now have &9Helper &7rank!" to arg-1
+                if argument 2 is "MVP":
+                    set {Rank.%arg 1's UUID%} to "MVP"
+                    send "{@prefix} &7%arg-1% now got the &bMVP &7rank!"
+                    message "{@prefix} &bThanks for your purchase!" to arg-1
+                    message "{@prefix} &bYou now have the MVP rank!" to arg-1
+                if argument 2 is "MVP+":
+                    set {Rank.%arg 1's UUID%} to "MVP+"
+                    send "{@prefix} &7%arg-1% now got the &bMVP&c+ &7rank!"
+                    message "{@prefix} &bThanks for your purchase!" to arg-1
+                    message "{@prefix} &bYou now have the MVP&c+&b rank!" to arg-1
+                if argument 2 is "VIP":
+                    set {Rank.%arg 1's UUID%} to "VIP"
+                    send "{@prefix} &7%arg-1% now got the &aVIP &7rank!"
+                    message "{@prefix} &aThanks for your purchase!" to arg-1
+                    message "{@prefix} &aYou now have the VIP rank!" to arg-1
+                if argument 2 is "VIP+":
+                    set {Rank.%arg 1's UUID%} to "VIP+"
+                    send "{@prefix} &7%arg-1% now got the &aVIP&6+ &7rank!"
+                    message "{@prefix} &aThanks for your purchase!" to arg-1
+                    message "{@prefix} &aYou now have the VIP&6+&a rank!" to arg-1
+                if argument 2 is "Mod":
+                    set {Rank.%arg 1's UUID%} to "Mod"
+                    send "{@prefix} &7%arg-1% now got the &2Mod &7rank!"
+                    message "{@prefix} &7You now have the &2Mod &7rank!" to arg-1
+                if argument 2 is "Build Team":
+                    set {Rank.%arg 1's UUID%} to "BT"
+                    send "{@prefix} &7%arg-1% now got the &3BUILD TEAM &7rank!"
+                    message "{@prefix} &7You now have the &3BUILD TEAM &7rank!" to arg-1
+                if argument 2 is "Player":
+                    clear {rank.%player's UUID%}
+                    send "{@prefix} &7%arg-1% now got the player &7rank!"
+                    message "{@prefix} &7You now have player &7rank!" to arg-1
+        else:
+            send "{@prefix} &7You need &cADMIN OR HIGHER &7in order to use this command."
+
+command /temprank [<offline player>] [<text>] [<timespan>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Admin" or "Owner":
+            if arg-1 is not set:
+                send "{@prefix} &f/temprank &c<Player> <Rank> <Time>"
+                send "{@prefix} &cTime examples: 1 minute or 5 minutes or 1 day ..."
+            if arg-1 is set:
+                if arg-2 is not set:
+                    send "{@prefix} &fRanks: &6[MVP&c++&6] | /temprank %arg-1% MVP++ <Time>"
+                if arg-2 is "MVP++":
+                    if arg-3 is not set:
+                        send "{@prefix} &fPlease enter a &cvalid &ftimespan."
+                        send "{@prefix} &cTime examples: &f1 minute or 5 minutes or 1 day ..."
+                    if arg-3 is set:
+                        if {Rank.%arg 1's UUID%} is "MVP++":
+                            send "{@prefix} &c%arg-1% &falready has the rank &6MVP&c++"
+                        else:
+                            set {rankdb_rank.%arg 1's UUID%} to "MVP++"
+                            set {Rank.%arg 1's UUID%} to "MVP++"
+                            set {rankdb_rankstart.%arg 1's UUID%} to now
+                            set {rankdb_rankexpire.%arg 1's UUID%} to arg-3
+                            send "{@prefix} &fRank &6MVP&c++ &fhas been &agiven&f to &c%arg-1% &ffor &c%arg-3%"
+                            if arg-1 is online:
+                                message "{@prefix} &6Thanks for your purchase!" to arg-1
+                                message "{@prefix} &6You now have the MVP&c++&6 rank!" to arg-1
+                                message "{@prefix} &6Expiring in: &c%arg-3%" to arg-1
+                            else:
+                                set {onjoinMVP++message.%arg 1's UUID%} to true
+
+on join:
+    if {onjoinMVP++message.%player's UUID%} is true:
+        wait 4 seconds
+        set {onjoinMVP++message.%player's UUID%} to false
+        message "{@prefix} &6Thanks for your purchase!" to player
+        message "{@prefix} &6You now have the MVP&c++&6 rank!" to player
+        message "{@prefix} &6Expiring in: &c%{rankdb_rankexpire.%player's UUID%}%" to player
+
+on connect:
+    if {rankdb_rankexpire.%player's UUID%} is set:
+        set {_rankcheck} to difference between now and {rankdb_rankstart.%player's UUID%}
+        reduce {_rankcheck} by {rankdb_rankexpire.%player's UUID%}
+        if difference between now and {rankdb_rankstart.%player's UUID%} is bigger than {rankdb_rankexpire.%player's UUID%}:
+            clear {rankdb_rankexpire.%player's UUID%}
+            clear {rankdb_rankstart.%player's UUID%}
+            clear {Rank.%player's UUID%}
+            wait 3 seconds
+            message "{@prefix} &7Your &6MVP&c++ &7rank has been expired." to player
+
+every 1 second:
+    loop all players:
+        if {rankdb.rankexpire.%loop-player's UUID%} is set:
+            set {_rankcheck.%loop-player's UUID%} to difference between now and {rankdb_rankstart.%loop-player's UUID%}
+            reduce {_rankcheck.%loop-player's UUID%} by {rankdb_rankexpire.%loop-player's UUID%}
+            if difference between now and {rankdb_rankstart.%loop-player's UUID%} is bigger than {rankdb_rankexpire.%loop-player's UUID%}:
+                clear {rankdb_rankexpire.%loop-player's UUID%}
+                clear {rankdb_rankstart.%loop-player's UUID%}
+                clear {Rank.%loop-player's UUID%}
+                message "{@prefix} &7Your &6MVP&c++ &7rank has been expired." to loop-player
+
+every 5 seconds:
+    clear {playercounter}
+    loop all players:
+        add 1 to {playercounter}
+
+#Scoreboard
+every 5 seconds:
+    loop all players:
+        wipe loop-player's sidebar
+        set name of sidebar of loop-player to "&e&l%{config.serverName}%"
+        set score "&1" in sidebar of loop-player to 10
+        if {Rank.%loop-player's UUID%} is "MVP+":
+            set score "&fRank: &bMVP&c+" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "Owner":
+            set score "&fRank: &cOWNER" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "MVP++":
+            set score "&fRank: &6MVP&c++" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "MVP":
+            set score "&fRank: &bMVP" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "Helper":
+            set score "&fRank: &9HELPER" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "Admin":
+            set score "&fRank: &cADMIN" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "VIP":
+            set score "&fRank: &aVIP" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "VIP+":
+            set score "&fRank: &aVIP&6+" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "Mod":
+            set score "&fRank: &2Mod" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is "BT":
+            set score "&fRank: &3Build Team" in sidebar of loop-player to 9
+        if {Rank.%loop-player's UUID%} is not set :
+            set score "&fRank: &7Default" in sidebar of loop-player to 9
+        set score "&fMystery Dust: &a%{mysterydust.%loop-player's UUID%}%" in sidebar of loop-player to 8
+        set score "&fAchievements: &a0" in sidebar of loop-player to 7
+        set score "&fLevel: &a0" in sidebar of loop-player to 6
+        set score "&7" in sidebar of loop-player to 5
+        set score "&fLobby: &a1" in sidebar of loop-player to 4
+        set score "&fPlayers: &a%{playercounter}%" in sidebar of loop-player to 3
+        set score "&f" in sidebar of loop-player to 2
+        set score "&e%{Config.Website}%" in sidebar of loop-player to 1
+
+#Commands
+
+on load:
+    if {FirstTimeLoaded.HypixelCore} is not set:
+        broadcast "{@prefix} &7Hello There!"
+        wait 1 second
+        broadcast "{@prefix} &cI'm setting up the plugin for the first time..."
+        set {FirstTimeLoaded.HypixelCore} to true
+        configReset(1)
+        wait 2 seconds
+        broadcast "{@prefix} &aDONE! &7Please go to the &cconfig file &7and &cchange &7the &cServer Owner section."
+        broadcast "{@prefix} &cAfterwards&7, use '&c/hypixel configreload&7' to &creload your config."
+        broadcast "{@prefix} &cEverytime you change something in the configfile, use /hypixel configreload afterwards."
+
+
+command /hypixel [<text>]:
+    trigger:
+        if argument 1 is not set:
+            send "&b&lThank you for using Hypixel Core"
+            send "&3If you are an admin or higher? You can use /hypixel help"
+            send "&9Created by KnuffelBeestje"
+            send "&9Published by bolleboor -> old MC name"
+            send "&3Version: &7{@version}"
+            set {versionserver} to line 1 from url "https://pastebin.com/raw/vS3N95UX"
+            send "&3Latest Version downloadable: &7%{versionserver}%"
+        if argument 1 is "help":
+            if {Rank.%player's UUID%} is "Admin" or "Owner":
+                send "&f "
+                send "&9Commands"
+                send "&b/hypixel help | &3Shows help"
+                send "&b/hypixel configreload | &3Reloads the config file."
+                send "&b/hypixel configreset | &3Resets the config or creates if deleted."
+                send "&b/hypixel reload | &3Reloads the Hypixel Skript"
+                send "&b/hypixel update | &3Update to a newer version if available."
+                send "&b/setrank  | &3Set a rank for a user."
+                send "&b/temprank | &3Set a rank for a user for a period of time."
+                send "&b/ban | &3Bans a player."
+                send "&b/tempban | &3Tempbans a player."
+                send "&b/baninfo | &3Looks at the ban information of a player."
+                send "&b/unban | &3Unbans a player."
+                send "&b/mute | &3Mutes a player."
+                send "&b/muteinfo | &3Looks at the mute information of a player."
+                send "&b/unmute | &3Unmutes a player."
+                send "&b/tempmute | &3&lCOMING NEXT UPDATE"
+                send "&b/dust | &3Changes the mysterydust of a player."
+                send "&f "
+            if {Rank.%player's UUID%} is not "Admin" or "Owner":
+                send "{@prefix} &7You need the &cADMIN rank or higher &7to execute that command."
+        if argument 1 is "configreset":
+            if {Rank.%player's UUID%} is "Owner":
+                if {ConfigResetWorking.HP} is true:
+                    send "{@prefix} &cA reset is already in progress."
+                else:
+                    set {ConfigResetWorking.HP} to true
+                    send "{@prefix} &c&oResetting or Creating config file..."
+                    send "{@prefix} &c&lWARNING: &cThis will not Reset or Re-create the bot addon config file."
+                    delete file "plugins/HypixelCore/config.yml"
+                    wait 2 seconds
+                    configReset(1)
+                    send "{@prefix} &a&lCOMPLETED%nl%&fPlease use '&c/hypixel configreload' &fif you are done editing the config file."
+                    set {ConfigResetWorking.HP} to false
+            else:
+                send "{@prefix} &cYou don't have the correct rank to execute this."
+        if argument 1 is "configreload":
+            if {FirstTimeloader} is not set:
+                set {FirstTimeloader} to false
+                configReload(1)
+                send "{@prefix} &cConfig &7is &creloaded."
+                send "{@prefix} &cPlease enter &7'/sk reload HypixelCore' &cto finish the job!"
+            if {Rank.%player's UUID%} is "Admin" or "Owner":
+                send "{@prefix} &cConfig &7is &creloaded."
+                configReload(1)
+        if argument 1 is "update":
+            if {Rank.%player's UUID%} is "Admin" or "Owner":
+                if {updatecheck.config} is "true" or "True":
+                    if {YouCanDownload} is true:
+                        if {UpdateConfirm.HypixelCore} is not set:
+                            send "&f "
+                            send "{@prefix} &7Please &c&lrepeat &7the &ccommand&7 in order to update."
+                            send "{@prefix} &cWARNING: &7&cSkUtilities &7needs to be installed!"
+                            send "&f "
+                            set {UpdateConfirm.HypixelCore} to true
+                            wait 10 seconds
+                            if {UpdateConfirm.HypixelCore} is true:
+                                set {UpdateConfirm.HypixelCore} to false
+                                send "{@prefix} &7You waited &cTOO LONG! &7| Request Denied"
+                            stop
+                        if {UpdateConfirm.HypixelCore} is true:
+                            set {UpdateConfirm.HypixelCore} to false
+                            send "{@prefix} &cDownload &7has been &aSTARTED"
+                            send "{@prefix} &7This &cMIGHT &7take a &cwhile"
+                            update(1)
+                            stop
+                        if {UpdateConfirm.HypixelCore} is false:
+                            send "&f "
+                            send "{@prefix} &7Please &c&lrepeat &7the &ccommand&7 in order to update."
+                            send "{@prefix} &cWARNING: &7You need &cSkUtilities&7to be installed!"
+                            send "&f "
+                            set {UpdateConfirm.HypixelCore} to true
+                            wait 10 seconds
+                            if {UpdateConfirm.HypixelCore} is true:
+                                set {UpdateConfirm.HypixelCore} to false
+                                send "{@prefix} &7You waited &cTOO LONG! &7| Request Denied"
+                            stop
+                    if {YouCanDownload} is false:
+                        send "{@prefix} &7There is &cNO &7update right now."
+                    if {YouCanDownload} is not set:
+                        send "{@prefix} &7There is &cNO &7update right now."
+                else:
+                    send "{@prefix} &7The &cupdate command&7 is &cdisabled &7in the &cconfig file."
+                    send "{@prefix} &7Please &aenable &7this in the config file in order to use this command."
+            else:
+                send "{@prefix} &7You need the &cADMIN rank or higher &7to execute that command."
+
+
+#Ban systems
+
+
+command /ban [<offline player>] [<text>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Mod" or "Admin" or "Owner":
+            if arg-1 is not set:
+                send "{@prefix} &c/ban <Player> <Reason> %nl%&fType: &c&lPERM BAN"
+            if arg-1 is set:
+                if arg-2 is not set:
+                    send "{@prefix} &c/ban %arg-1% <Reason> %nl%&fType: &c&lPERM BAN"
+                if arg-2 is set:
+                    if {isbanned.%arg 1's UUID%} is true:
+                        send "{@prefix} &c%arg-1% &fis already &cbanned &ffrom our network."
+                    else:
+                        if arg-1 is sender:
+                            send "{@prefix} &cBanning&f yourself is not always an option to end something."
+                        else:
+                            send "{@prefix} &bBan in progress..."
+                            set {isbanned.%arg 1's UUID%} to true
+                            set {bantype.%arg 1's UUID%} to "perm"
+                            set {banreason.%arg 1's UUID%} to arg-2
+                            set {bannedby.%arg 1's UUID%} to player
+                            send "{@prefix} &a%arg-1% &fhas been banned."
+                            kick arg-1 due to "&cYou are permanently banned from this server!%nl% %nl%&7Reason: &f%{banreason.%arg 1's UUID%}% %nl%&7Find out more: &b&n%{appeallink.HP}%"
+                            loop all players:
+                                if {Rank.%loop-player's UUID%} is "Helper" or "Mod" or "Admin" or "Owner" or "BT":
+                                    message "&f " to loop-player
+                                    message "&l-=[&c&lBAN&f&l]=-" to loop-player
+                                    message "&fBanned User: &c%arg-1%" to loop-player
+                                    message "&fBanned By:&c %player%" to loop-player
+                                    message "&fBan Reason: &c%arg-2%" to loop-player
+                                    message "&f " to loop-player
+        else:
+            send "{@prefix} &7You need &3Mod OR HIGHER &7in order to execute this command."
+
+command /tempban [<offline player>] [<text>] [<timespan>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Mod" or "Admin" or "Owner":
+            if arg-1 is not set:
+                send "{@prefix} &c/tempban <player> <reason> <time> %nl%&fType: &c&mTEMPBAN"
+            if arg-1 is set:
+                if arg-2 is not set:
+                    send "{@prefix} &c/tempban %arg-1% <reason> <time> %nl%&fType: &c&lTEMPBAN" 
+                if arg-2 is set:
+                    if arg-3 is not set:
+                        send "{@prefix} &c/tempban %arg-1% %arg-2% <time> %nl%&fType: &c&mTEMPBAN"
+                        send "{@prefix} &cTime examples: &f1 minute or 5 minutes or 2 days ..."
+                    if arg-3 is set:
+                        if arg-1 is sender:
+                            send "{@prefix} &cBanning&f yourself is not always an option to end something."
+                        else:
+                            if {isbanned.%arg 1's UUID%} is true:
+                                send "{@prefix} &c%arg-1% &fcurrently &chas &fa &c&lPERM BAN &fby %{bannedby.%arg 1's UUID%}%"
+                            else:
+                                if {isbannedtemp.%arg 1's UUID%} is true:
+                                    send "{@prefix} &c%arg-1% &fcurrently &chas &fa &c&lTEMPBAN &fby %{bannedby.%arg 1's UUID%}%"
+                                    send "{@prefix} &cExpires in: "
+                                if {isbannedtemp.%arg 1's UUID%} is not set:
+                                    send "{@prefix} &bBan in progress..."
+                                    set {isbannedtemp.%arg 1's UUID%} to true
+                                    set {bantype.%arg 1's UUID%} to "temp"
+                                    set {banreason.%arg 1's UUID%} to arg-2
+                                    set {bannedby.%arg 1's UUID%} to player
+                                    set {bannedwhen.%arg 1's UUID%} to now
+                                    set {banexpire.%arg 1's UUID%} to arg 3
+                                    send "{@prefix} &a%arg-1% &fhas been banned for &c%arg-3%"
+                                    kick arg-1 due to "&cYou are temporarily banned for &f%arg-3% &cfrom this server!%nl% %nl%&7Reason: &f%arg-2%%nl%&7Find out more: &b&n%{appeallink.HP}%"
+                                    set {_secondcheck} to difference between {bannedwhen.%arg 1's UUID%} and now
+                                    loop all players:
+                                        if {Rank.%loop-player's UUID%} is "Helper" or "Mod" or "Admin" or "Owner" or "BT":
+                                            message "&f " to loop-player
+                                            message "&l-=[&c&lTEMPBAN&f&l]=-" to loop-player
+                                            message "&fBanned User:&c %arg-1%" to loop-player
+                                            message "&fBanned By: &c%player%" to loop-player
+                                            message "&fBan Reason: &c%arg-2%" to loop-player
+                                            message "&fCompletion: &c%{_secondcheck}% / %{banexpire.%arg 1's UUID%}%" to loop-player
+                                            message "&f " to loop-player
+        else:
+            send "{@prefix} &7You need &3Mod OR HIGHER &7in order to execute this command."
+command /unban [<offline player>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Mod" or "Admin" or "Owner":
+            if arg-1 is not set:
+                send "{@prefix} &c/unban <Player>"
+            if arg-1 is set:
+                if {isbanned.%arg 1's UUID%} is true:
+                    set {isbanned.%arg 1's UUID%} to false
+                    send "{@prefix} &a%arg-1% has been &aunbanned&f."
+                    loop all players:
+                        if {Rank.%loop-player's UUID%} is "Helper" or "Mod" or "Admin" or "Owner":
+                            message "&f " to loop-player
+                            message "&l-=[&a&lUNBAN&f&l]=-" to loop-player
+                            message "&fUnbanned User: %arg-1%" to loop-player
+                            message "&fUnbanned By: %player%" to loop-player
+                            message "&cAction has been saved" to loop-player
+                            message "&f " to loop-player
+                if {isbannedtemp.%arg 1's UUID%} is true:
+                    clear {isbannedtemp.%arg 1's UUID%}
+                    send "{@prefix} &a%arg-1% has been &aunbanned&f."
+                    loop all players:
+                        if {Rank.%loop-player's UUID%} is "Helper" or "Mod" or "Admin" or "Owner" or "BT":
+                            message "&f " to loop-player
+                            message "&l-=[&a&lUNBAN&f&l]=-" to loop-player
+                            message "&fUnbanned User: %arg-1%" to loop-player
+                            message "&fUnbanned By: %player%" to loop-player
+                            message "&cAction has been saved" to loop-player
+                            message "&f " to loop-player
+                else:
+                    send "{@prefix} &c%arg-1% &fis &cnot banned&f."
+            else:
+                send "{@prefix} &7You need &3Mod OR HIGHER &7in order to execute this command."
+
+command /baninfo [<offline player>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Mod" or "Admin" or "Owner" or "Helper":
+            if arg-1 is not set:
+                send "{@prefix} &c/baninfo <player>"
+            if arg-1 is set:
+                if {isbanned.%arg 1's UUID%} or {isbannedtemp.%arg 1's UUID%} is true:
+                    send "&f "
+                    send "&f&l-=[&c&lBANINFO&f&l]=-"
+                    send "Banned User: %arg-1%"
+                    send "Banned By: %{bannedby.%arg 1's UUID%}%"
+                    send "Ban Reason: %{banreason.%arg 1's UUID%}%"
+                    if {bantype.%arg 1's UUID%} is "perm":
+                        send "Ban Type: &c&lPERM BAN"
+                    if {bantype.%arg 1's UUID%} is "temp":
+                        send "Ban Type: &c&lTEMPBAN"
+                        set {_secondcheck} to difference between {bannedwhen.%arg 1's UUID%} and now
+                        if {_secondcheck} >= {banexpire.%arg 1's UUID%}:
+                            send "&fCompletion: %{banexpire.%arg 1's UUID%}% / %{banexpire.%arg 1's UUID%}%"
+                        else:
+                            send "&fCompletion: %{_secondcheck}% / %{banexpire.%arg 1's UUID%}% "
+                else:
+                    send "{@prefix} &c%arg-1% &fis &cnot banned"
+        else:
+            send "{@prefix} &7You need &9Helper OR HIGHER &7in order to execute this command."       
+
+
+on connect:
+    if {isbanned.%player's UUID%} is true:
+        kick player due to "&cYou are permanently banned from this server!%nl% %nl%&7Reason: &f%{banreason.%player's UUID%}% %nl%&7Find out more: &b&n%{appeallink.HP}%"
+    if {isbannedtemp.%player's UUID%} is true:
+        set {_secondcheck} to difference between {bannedwhen.%player's UUID%} and now
+        set {_bancheck} to difference between now and {bannedwhen.%player's UUID%}
+        reduce {_bancheck} by {banexpire.%player's UUID%}
+        if difference between now and {bannedwhen.%player's UUID%} is bigger than {banexpire.%player's UUID%}:
+            clear {banexpire.%player's UUID%}
+            clear {isbannedtemp.%player's UUID%}
+            clear {bannedwhen.%player's UUID%}
+            wait 3 seconds
+            message "{@prefix} &cYou just got recovered from your ban!" to player
+            message "{@prefix} &cPlease follow our rules so it doesn't happen again!" to player
+        if difference between now and {bannedwhen.%player's UUID%} is less than {banexpire.%player's UUID%}:
+            kick player due to "&cYou are temporarily banned [ &f%{_secondcheck}% / %{banexpire.%player's UUID%}% ] &cfrom this server!%nl% %nl%&7Reason: &f%{banreason.%player's UUID%}%%nl%&7Find out more: &b&n%{appeallink.HP}%"
+
+#Mute System
+
+command /mute [<offline player>] [<text>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Helper" or "Owner" or "Admin" or "Mod":
+            if arg-1 is not set:
+                send "{@prefix} &f/mute &c<playername> &f<reason>"
+            if arg-1 is set:
+                if arg-1 is sender:
+                    send "{@prefix} &fYou can't &cmute yourself."
+                    stop
+                if arg-2 is not set:
+                    send "{@prefix} &f/mute &f<playername> &c<reason>"
+                if arg-2 is set:
+                    if {mutehp.%arg 1's UUID%} is true:
+                        send "{@prefix} &c%arg-1% &fis already &cmuted."
+                    else:
+                        set {mutehp.%arg 1's UUID%} to true
+                        set {muteexecutor.%arg 1's UUID%} to player
+                        set {muteexecuted.%arg 1's UUID%} to now
+                        set {mutereason.%arg 1's UUID%} to arg 2
+                        message "{@prefix} &fYou have been &cmuted.%nl%&fPlease try to chat to see more information." to arg-1
+                        loop all players:
+                            if {Rank.%loop-player's UUID%} is "Helper" or "Owner" or "Admin" or "Mod" or "BT":
+                                message "&f " to loop-player
+                                message "&l-=[&c&lMUTE&f&l]=-" to loop-player
+                                message "&fMuted User:&c %arg-1%" to loop-player
+                                message "&fMuted By: &c%player%" to loop-player
+                                message "&fMute Reason: &c%arg-2%" to loop-player
+                                message "&f " to loop-player
+        else:
+            send "{@prefix} &fYou need &cMOD+ &fin order to execute that command!"
+
+command /unmute [<offline player>]:
+    trigger:
+        if {Rank.%player's UUID%} is  "Owner" or "Admin" or "Mod":
+            if arg-1 is not set:
+                send "{@prefix} &f/unmute &c<playername>"
+            if arg-1 is set:
+                if {mutehp.%arg 1's UUID%} is true:
+                    clear {mutehp.%arg 1's UUID%}
+                    clear {tempmutehp.%arg 1's UUID%}
+                    send "{@prefix} &fMute has been &crevoked &ffrom &c%arg-1%"
+                    message "{@prefix} &fYou got umuted by &c%sender%" to arg-1
+                    loop all players:
+                        if {Rank.%loop-player's UUID%} is "Helper" or "Owner" or "Admin" or "Mod" or "BT":
+                            message "&f " to loop-player
+                            message "&l-=[&a&lUNMUTE&f&l]=-" to loop-player
+                            message "&fUnmuted User:&c %arg-1%" to loop-player
+                            message "&fUnmuted By: &c%player%" to loop-player
+                            message "&f " to loop-player
+                    stop
+                else:
+                    send "{@prefix} &c%arg-1% &fis &cnot &cmuted"
+command /muteinfo [<offline player>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Helper" or "Owner" or "Admin" or "Mod":
+            if arg-1 is not set:
+                send "{@prefix} &f/muteinfo &c<playername>"
+            if arg-1 is set:
+                if {mutehp.%arg 1's UUID%} is true:
+                    message "&f " to player
+                    message "&l-=[&c&lMUTE INFO&f&l]=-" to player
+                    message "&fMuted User:&c %arg-1%" to player
+                    message "&fMuted By: &c%{muteexecutor.%arg 1's UUID%}%" to player
+                    message "&fMute Reason: &c%{mutereason.%arg 1's UUID%}%" to player
+                    message "&fExecuted At: &c%{muteexecuted.%arg 1's UUID%}%" to player
+                    message "&f " to player
+                else:
+                    send "{@prefix} &c%arg-1% &fis not &cmuted."
+
+#ChatSystem
+on chat:
+    if {mutehp.%player's UUID%} is true:
+        if {tempmutehp.%player's UUID%} is true:
+            cancel event
+            send "{@prefix} &cYou &fcurrently have a &cmute!"
+            send "{@prefix} &fDuration: %{muteduration.%player's UUID%}%%nl%&fReason: &c%{mutereason.%player's UUID%}%%nl%&fStaff: &c%{muteexecutor.%player's UUID%}%"
+        else:
+            cancel event
+            send "{@prefix} &cYou &fhave a &cPERM MUTE &fgiven by %{muteexecutor.%player's UUID%}%"
+    else:
+        cancel event
+        if {Rank.%player's UUID%} is "Owner":
+            cancel event
+            broadcast "&c[OWNER] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "Admin":
+            cancel event
+            broadcast "&c[ADMIN] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "Mod":
+            cancel event
+            broadcast "&2[MOD] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "MVP+":
+            cancel event
+            broadcast "&b[MVP&c+&b] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "MVP++":
+            cancel event
+            broadcast "&6[MVP&c++&6] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "MVP":
+            cancel event
+            broadcast "&b[MVP] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "VIP":
+            cancel event
+            broadcast "&a[VIP] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "VIP+":
+            cancel event
+            broadcast "&a[VIP&6+&a] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "Helper":
+            cancel event
+            broadcast "&9[HELPER] %player%: &f%message%"
+        if {Rank.%player's UUID%} is "BT":
+            cancel event
+            broadcast "&3[BUILD TEAM] %player%: &f%message%"
+        if {Rank.%player's UUID%} is not "Admin" or "Owner" or "MVP+" or "Helper" or "MVP" or "MVP++" or "VIP" or "VIP+" or "Mod" or "BT":
+            broadcast "&7%player%: %message%"
+
+#MysteryDust
+
+command /dust [<text>] [<offline player>] [<integer>] :
+    trigger:
+        if {Rank.%player's UUID%} is "Owner" or "Admin":
+            if arg-1 is not set:
+                send "{@prefix} &f/dust add <playername> <number>"
+                send "{@prefix} &f/dust get <playername>"
+                send "{@prefix} &f/dust take <playername> <number>"
+                send "{@prefix} &f/dust set <playername> <number>"
+            if arg-1 is "add":
+                if arg-2 is not set:
+                    send "{@prefix} &f/dust add &c<playername> &f<number>"
+                if arg-2 is set:
+                    if arg-3 is not set:
+                        send "{@prefix} &f/dust add <playername> &c<number>"
+                    if arg-3 is set:
+                        add arg 3 to {mysterydust.%arg 2's UUID%}
+                        send "{@prefix} &aAdded &f%arg-3% to &amystery dust&f to %arg-2%'s dust balance"
+                        stop
+            if arg-1 is "set":
+                if arg-2 is not set:
+                    send "{@prefix} &f/dust set &c<playername> <number>"
+                if arg-2 is set:
+                    if arg-3 is not set:
+                        send "{@prefix} &f/dust set <playername> &c<number>"
+                    if arg-3 is set:
+                        if arg-3 is an integer:
+                            if arg 3 >= 0:
+                                set {mysterydust.%arg 2's UUID%} to arg 3
+                                send "{@prefix} &fYou have &asuccessfully &fchanged %arg-2% his/her mystery dust to &c%arg-3%"
+                                stop
+                            else:
+                                send "{@prefix} &fThere was an &cissue &fsetting the mystery dust to &c%arg-3%"
+                        else:
+                            send "{@prefix} &fThis number is &cinvalid."
+            if arg-1 is "take":
+                if arg-2 is not set:
+                    send "{@prefix} &f/dust take &c<playername> <number>"
+                if arg-2 is set:
+                    if arg-3 is not set:
+                        send "{@prefix} &f/dust take <playername> &c<number>"
+                    if arg-3 is set:
+                        if arg-3 is an integer:
+                            if arg 3 = 0:
+                                send "{@prefix} &fYou can't take nothing from nothing"
+                                stop
+                            if arg 3 <= {mysterydust.%arg 2's UUID%}:
+                                remove arg-3 from {mysterydust.%arg 2's UUID%}
+                                send "{@prefix} &fYou have &asuccessfully &ftook &c%arg-3% &fmystery dust from &c%arg-2%"
+                                stop
+                            if arg 3 > {mysterydust.%arg 2's UUID%}:
+                                send "{@prefix} &fThere was an &cissue &ftaking &f%arg-3% mystery dust from &c%arg-2%"
+                                send "{@prefix} &c%arg-2%'s&f mystery dust balance is &c%{mysterydust.%arg 2's UUID%}%"
+                        else:
+                            send "{@prefix} &fThis number is &cinvalid."
+            if arg-1 is "view":
+                if arg-2 is not set:
+                    send "{@prefix} &f/dust view &c<playername>"
+                if arg-2 is set:
+                    send "{@prefix} &c%arg-2% &fhas &c%{mysterydust.%arg 2's UUID%}% &fmysterydust."
+        else:
+            send "{@prefix} &fYou need to have &cadmin+ &fin order to &ccontinue."
+
+on join:
+    if {mysterydust.%player's UUID%} is not set:
+        set {mysterydust.%player's UUID%} to 0
