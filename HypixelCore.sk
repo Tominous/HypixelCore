@@ -9,7 +9,7 @@
 
 options:
     prefix: &3[&b&lHypixel&3]
-    version: 1.0 #Don't change this version please, it will break the version checker.
+    version: 1.0.1 #Don't change this version please, it will break the version checker.
 
 
 #CHANGES YOU MAKE BELOW THIS LINE ARE AT YOUR OWN RISK.
@@ -88,8 +88,8 @@ every 2 seconds:
             set {versionserver} to line 1 from url "https://pastebin.com/raw/vS3N95UX"
             set {versionmessage} to line 2 from url "https://pastebin.com/raw/vS3N95UX"
             set {versiondownload} to line 3 from url "https://pastebin.com/raw/vS3N95UX"
-            set {versionchecker} to false
             if {versionserver} is not "{@version}":
+                set {versionchecker} to false
                 loop all players:
                     if {Rank.%loop-player's UUID%} is "Admin" or "Owner":
                         message "{@prefix} &7There is a new version for you to download." to loop-player
@@ -171,7 +171,7 @@ command /setrank [<offline player>] [<text>]:
                     send "{@prefix} &7%arg-1% now got the &3BUILD TEAM &7rank!"
                     message "{@prefix} &7You now have the &3BUILD TEAM &7rank!" to arg-1
                 if argument 2 is "Player":
-                    clear {rank.%player's UUID%}
+                    clear {rank.%arg 1's UUID%}
                     send "{@prefix} &7%arg-1% now got the player &7rank!"
                     message "{@prefix} &7You now have player &7rank!" to arg-1
         else:
@@ -469,7 +469,7 @@ command /tempban [<offline player>] [<text>] [<timespan>]:
                                             message "&fBanned User:&c %arg-1%" to loop-player
                                             message "&fBanned By: &c%player%" to loop-player
                                             message "&fBan Reason: &c%arg-2%" to loop-player
-                                            message "&fCompletion: &c%{_secondcheck}% / %{banexpire.%arg 1's UUID%}%" to loop-player
+                                            message "&fBan Duration: &c%arg-3%" to loop-player
                                             message "&f " to loop-player
         else:
             send "{@prefix} &7You need &3Mod OR HIGHER &7in order to execute this command."
@@ -490,6 +490,7 @@ command /unban [<offline player>]:
                             message "&fUnbanned By: %player%" to loop-player
                             message "&cAction has been saved" to loop-player
                             message "&f " to loop-player
+                            stop
                 if {isbannedtemp.%arg 1's UUID%} is true:
                     clear {isbannedtemp.%arg 1's UUID%}
                     send "{@prefix} &a%arg-1% has been &aunbanned&f."
@@ -501,6 +502,7 @@ command /unban [<offline player>]:
                             message "&fUnbanned By: %player%" to loop-player
                             message "&cAction has been saved" to loop-player
                             message "&f " to loop-player
+                            stop
                 else:
                     send "{@prefix} &c%arg-1% &fis &cnot banned&f."
             else:
@@ -673,7 +675,7 @@ command /dust [<text>] [<offline player>] [<integer>] :
         if {Rank.%player's UUID%} is "Owner" or "Admin":
             if arg-1 is not set:
                 send "{@prefix} &f/dust add <playername> <number>"
-                send "{@prefix} &f/dust get <playername>"
+                send "{@prefix} &f/dust view <playername>"
                 send "{@prefix} &f/dust take <playername> <number>"
                 send "{@prefix} &f/dust set <playername> <number>"
             if arg-1 is "add":
