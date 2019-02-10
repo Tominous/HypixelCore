@@ -9,7 +9,7 @@
 
 options:
     prefix: &3[&b&lHypixel&3]
-    version: 1.0.1 #Don't change this version please, it will break the version checker.
+    version: 1.0.2 #Don't change this version please, it will break the version checker.
 
 
 #CHANGES YOU MAKE BELOW THIS LINE ARE AT YOUR OWN RISK.
@@ -292,7 +292,13 @@ on load:
         broadcast "{@prefix} &cAfterwards&7, use '&c/hypixel configreload&7' to &creload your config."
         broadcast "{@prefix} &cEverytime you change something in the configfile, use /hypixel configreload afterwards."
 
-
+on load:
+    if {ReloadWorking.HP} is set:
+        clear {ReloadWorking.HP}
+        loop all players:
+            if {Rank.%loop-player's UUID%} is "Owner":
+                message "{@prefix} &aReload has been completed :D" to loop-player
+                stop
 command /hypixel [<text>]:
     trigger:
         if argument 1 is not set:
@@ -326,6 +332,20 @@ command /hypixel [<text>]:
                 send "&f "
             if {Rank.%player's UUID%} is not "Admin" or "Owner":
                 send "{@prefix} &7You need the &cADMIN rank or higher &7to execute that command."
+        if argument 1 is "reload":
+            if {Rank.%player's UUID%} is "Owner":
+                if {ReloadWorking.HP} is true:
+                    send "{@prefix} &cA reload is already in progress."
+                else:
+                    set {ReloadWorking.HP} to true
+                    send "{@prefix} &c&oReload has started. &c&nPlease Wait..."
+                    execute console command "sk reload HypixelCore"
+                    wait 10 seconds
+                    if {ReloadWorking.HP} is set:
+                        clear {ReloadWorking.HP}
+                        send "{@prefix} &cThere was an ERROR while reloading."
+                        send "{@prefix} &cPlease rename the skript to 'HypixelCore' (EXACTLY!)"
+                        stop
         if argument 1 is "configreset":
             if {Rank.%player's UUID%} is "Owner":
                 if {ConfigResetWorking.HP} is true:
