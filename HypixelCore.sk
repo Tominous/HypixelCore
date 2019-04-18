@@ -9,7 +9,7 @@
 
 options:
     prefix: &3[&b&lHypixel&3]
-    version: 1.0.2 #Don't change this version please, it will break the version checker.
+    version: 1.0.3 #Don't change this version please, it will break the version checker.
 
 
 #CHANGES YOU MAKE BELOW THIS LINE ARE AT YOUR OWN RISK.
@@ -59,6 +59,48 @@ every 5 seconds:
 on connect:
     if player is {ServerOwner.HypixelCore}:
         set {Rank.%player's UUID%} to "Owner"
+
+#Whitelist
+command /whitelist [<text>] [<offline player>]:
+    trigger:
+        if {Rank.%player's UUID%} is "Admin" or "Owner":
+            if arg-1 is not set:
+                send "/whitelist on"
+                send "/whitelist off"
+                send "/whitelist toggle"
+            if arg-1 is "on":
+                if {whitelist} is not set:
+                    set {whitelist} to true
+                    broadcast "{@prefix} &6&lWHITELIST HAS BEEN &2&lENABLED"
+                    stop
+                else:
+                    send "{@prefix} &cWhitelist is already enabled."
+            if arg-1 is "off":
+                if {whitelist} is true:
+                    clear {whitelist}
+                    broadcast "{@prefix} &6&lWHITELIST HAS BEEN &4&lDISABLED"
+                    stop
+                else:
+                    send "{@prefix} &cWhitelist is already disabled."
+            if arg-1 is "toggle":
+                if arg-2 is not set:
+                    send "{@prefix} &cPlease enter a playername."
+                if arg-2 is set:
+                    if {whitelist.%arg-2's UUID%} is not set:
+                        broadcast "{@prefix} &6%arg-2% &fhas been &aadded &fto the whitelist"
+                        add arg-2 to {whitelistlist::*}
+                        set {whitelist.%arg-2's UUID%} to true
+                    else:
+                        clear {whitelist.%arg-2's UUID%}
+                        remove arg-2 from {whitelistlist::*}
+                        broadcast "{@prefix} &6%arg-2% &fhas been &cremoved &ffrom the whitelist"
+            if arg-1 is "list":
+                send "{@prefix} &6Whitelisted players: &e%{whitelistlist::*}%"
+on connect:
+    if {whitelist} is true:
+        if {whitelist.%player's UUID%} is not set:
+            kick player due to "&c&l⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯%nl%&3Our server is currently in maintenance%nl%&bPlease check back again soon!%nl%&c&l⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+            stop
 
 #OnJoinevents
 
@@ -278,6 +320,8 @@ every 5 seconds:
         set score "&f" in sidebar of loop-player to 2
         set score "&e%{Config.Website}%" in sidebar of loop-player to 1
 
+
+            
 #Commands
 
 on load:
@@ -470,7 +514,7 @@ command /tempban [<offline player>] [<text>] [<timespan>]:
                             else:
                                 if {isbannedtemp.%arg 1's UUID%} is true:
                                     send "{@prefix} &c%arg-1% &fcurrently &chas &fa &c&lTEMPBAN &fby %{bannedby.%arg 1's UUID%}%"
-                                    send "{@prefix} &cExpires in: "
+                                    send "&fCompletion: %{banexpire.%arg 1's UUID%}% / %{banexpire.%arg 1's UUID%}%"
                                 if {isbannedtemp.%arg 1's UUID%} is not set:
                                     send "{@prefix} &bBan in progress..."
                                     set {isbannedtemp.%arg 1's UUID%} to true
