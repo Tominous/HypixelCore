@@ -580,7 +580,7 @@ command /baninfo [<offline player>]:
             if arg-1 is set:
                 if {isbanned.%arg 1's UUID%} or {isbannedtemp.%arg 1's UUID%} is true:
                     send "&f "
-                    send "&f&l-=[&c&lBANINFO&f&l]=-"
+                    send "&f&l-=[&c&lBAN INFORMATION&f&l]=-"
                     send "Banned User: %arg-1%"
                     send "Banned By: %{bannedby.%arg 1's UUID%}%"
                     send "Ban Reason: %{banreason.%arg 1's UUID%}%"
@@ -678,7 +678,7 @@ command /muteinfo [<offline player>]:
             if arg-1 is set:
                 if {mutehp.%arg 1's UUID%} is true:
                     message "&f " to player
-                    message "&l-=[&c&lMUTE INFO&f&l]=-" to player
+                    message "&l-=[&c&lMUTE INFORMATION&f&l]=-" to player
                     message "&fMuted User:&c %arg-1%" to player
                     message "&fMuted By: &c%{muteexecutor.%arg 1's UUID%}%" to player
                     message "&fMute Reason: &c%{mutereason.%arg 1's UUID%}%" to player
